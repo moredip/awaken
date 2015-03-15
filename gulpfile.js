@@ -38,6 +38,7 @@ gulp.task('app-js', function() {
   var b = browserify('./js/app.js');
 
   b.bundle()
+    .pipe(plumber())
     .pipe(source('app.js'))
     .pipe(gulp.dest(BUILD_DIR));
 });

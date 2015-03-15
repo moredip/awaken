@@ -1,17 +1,21 @@
 var h = require('virtual-dom/virtual-hyperscript'),
-    createElement = require('virtual-dom/create-element'),
-    diff = require('virtual-dom/diff'),
-    patch = require('virtual-dom/patch');
+    realizer = require('./realizer');
 
-var tree = h('h1','oh hai');
-var rootNode = createElement(tree);
+var appContainer = document.getElementsByTagName('main')[0];
+var realizerFn = realizer( appContainer );
 
-var container = document.getElementsByTagName('main')[0];
-container.appendChild(rootNode);
+function render(count){
+  var content = 'count: '+count;
+  return h(
+    'h1',
+    { onclick: function(){ console.log('clicked!'); }},
+    content
+  );
+}
 
-setTimeout( function(){
-  var newTree = h('h1','bing bong');
-  var patches = diff(tree,newTree);
-  rootNode = patch(rootNode, diff(tree,newTree));
-  tree = newTree;
-}, 1000);
+var count = 0;
+setInterval( function(){
+  var tree = render(count);
+  realizerFn = realizerFn(tree);
+  count++;
+}, 100);

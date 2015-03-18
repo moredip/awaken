@@ -1,21 +1,63 @@
-var h = require('virtual-dom/virtual-hyperscript'),
+const h = require('virtual-dom/virtual-hyperscript'),
     realizer = require('./realizer');
 
-var appContainer = document.getElementsByTagName('main')[0];
-var realizerFn = realizer( appContainer );
+function initialRealizerFn(){
+  const appContainer = document.getElementsByTagName('main')[0];
+  return realizer( appContainer );
+}
 
-function render(count){
-  var content = 'count: '+count;
+function initialState(){
+  return {count:0};
+}
+
+function display(state,realizerFn){
+  const onNewAppState = function(newState){
+    display(newState,nextRealizerFn);
+  }
+
+  const tree = render(state,onNewAppState);
+  const nextRealizerFn = realizerFn(tree);
+}
+
+function createUpdater(appState, onNewAppState){
+  return function updater(stateTransformer){
+    return function(){
+      const newAppState = stateTransformer(appState);
+      onNewAppState(newAppState);
+    };
+  };
+}
+
+function render(appState, onNewAppState){
+  const updater = createUpdater(appState,onNewAppState);
+
+  const onClickUp = updater( function(appState){
+    return { count: appState.count + 1 };
+  });
+  const onClickDown = updater( function(appState){
+    return { count: appState.count - 1 };
+  });
+
+  const content = 'count: '+appState.count;
   return h(
-    'h1',
-    { onclick: function(){ console.log('clicked!'); }},
-    content
+    'section',
+    [
+    h(
+      'p',
+      content
+    ),
+    h(
+      'button',
+      { onclick: onClickUp },
+      'UP'
+    ),
+    h(
+      'button',
+      { onclick: onClickDown },
+      'DOWN'
+    )
+    ]
   );
 }
 
-var count = 0;
-setInterval( function(){
-  var tree = render(count);
-  realizerFn = realizerFn(tree);
-  count++;
-}, 100);
+display(initialState(),initialRealizerFn());

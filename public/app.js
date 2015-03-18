@@ -2,24 +2,66 @@
 var h = require('virtual-dom/virtual-hyperscript'),
     realizer = require('./realizer');
 
-var appContainer = document.getElementsByTagName('main')[0];
-var realizerFn = realizer( appContainer );
+function initialRealizerFn(){
+  var appContainer = document.getElementsByTagName('main')[0];
+  return realizer( appContainer );
+}
 
-function render(count){
-  var content = 'count: '+count;
+function initialState(){
+  return {count:0};
+}
+
+function display(state,realizerFn){
+  var onNewAppState = function(newState){
+    display(newState,nextRealizerFn);
+  }
+
+  var tree = render(state,onNewAppState);
+  var nextRealizerFn = realizerFn(tree);
+}
+
+function createUpdater(appState, onNewAppState){
+  return function updater(stateTransformer){
+    return function(){
+      var newAppState = stateTransformer(appState);
+      onNewAppState(newAppState);
+    };
+  };
+}
+
+function render(appState, onNewAppState){
+  var updater = createUpdater(appState,onNewAppState);
+
+  var onClickUp = updater( function(appState){
+    return { count: appState.count + 1 };
+  });
+  var onClickDown = updater( function(appState){
+    return { count: appState.count - 1 };
+  });
+
+  var content = 'count: '+appState.count;
   return h(
-    'h1',
-    { onclick: function(){ console.log('clicked!'); }},
-    content
+    'section',
+    [
+    h(
+      'p',
+      content
+    ),
+    h(
+      'button',
+      { onclick: onClickUp },
+      'UP'
+    ),
+    h(
+      'button',
+      { onclick: onClickDown },
+      'DOWN'
+    )
+    ]
   );
 }
 
-var count = 0;
-setInterval( function(){
-  var tree = render(count);
-  realizerFn = realizerFn(tree);
-  count++;
-}, 100);
+display(initialState(),initialRealizerFn());
 
 },{"./realizer":2,"virtual-dom/virtual-hyperscript":22}],2:[function(require,module,exports){
 var createElement = require('virtual-dom/create-element'),
@@ -31,7 +73,7 @@ module.exports = createInitialRealizerFn;
 function createNextRealizerFn(prevTree,prevRootNode){
   return function( newTree ){
     var patches = diff(prevTree,newTree);
-    newRootNode = patch(prevRootNode,patches);
+    var newRootNode = patch(prevRootNode,patches);
 
     return createNextRealizerFn(newTree,newRootNode);
   }
@@ -39,10 +81,7 @@ function createNextRealizerFn(prevTree,prevRootNode){
 
 function initialRealization( tree, container ){
   var rootNode = createElement(tree);
-
-  var container = document.getElementsByTagName('main')[0];
   container.appendChild(rootNode);
-
   return createNextRealizerFn(tree,rootNode);
 };
 

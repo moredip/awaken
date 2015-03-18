@@ -4,6 +4,7 @@ var gulp = require('gulp'),
     coffee = require('gulp-coffee'),
     concat = require('gulp-concat'),
     rename = require('gulp-rename'),
+    defs = require('gulp-defs'),
     source = require('vinyl-source-stream'),
     browserify = require('browserify');
 
@@ -34,8 +35,9 @@ gulp.task('app-js', function() {
       //transform: ['coffeeify'],
       //extensions: ['.coffee']
     //});
-  
+    
   var b = browserify('./js/app.js');
+  b.transform('browserify-defs');
 
   b.bundle()
     .pipe(plumber())

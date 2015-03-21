@@ -11,7 +11,7 @@ module.exports = startDisplay;
 function startDisplay( renderFn, initialState, initialRealizer ){
   const stream = new Bacon.Bus();
 
-  const display = function display(newState){
+  const display = function display(newState, e){
     const updater = createAppStateUpdater(newState, stream);
     const tree = renderFn(newState,updater);
     return {state: newState, realizer: e.realizer(tree)}

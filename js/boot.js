@@ -23,6 +23,7 @@ function createAndRunWorldStream(renderFn, initialWorld){
     .scan(initialWorld,worldTransformer)
     .onValue(); // this is needed to create a pull through the stream.
 
+  // need an initial value pushed through the stream to trigger the first app render
   stateTransformationStream.push(identity);
 }
 

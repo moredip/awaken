@@ -2,10 +2,9 @@ const Bacon = require('baconjs');
 const createAppStateUpdater = require('./createAppStateUpdater'),
       realizerForContainer = require('./realizerForContainer');
 
-module.exports = run;
+module.exports = boot;
 
 const identity = function(_){ return _; };
-
 
 function createAndRunWorldStream(renderFn, initialWorld){
   const stateTransformationStream = new Bacon.Bus();
@@ -27,11 +26,13 @@ function createAndRunWorldStream(renderFn, initialWorld){
   stateTransformationStream.push(identity);
 }
 
+// Start rendering the app and processing events.
+//
 // renderFn is a user-defined function which takes an appState and an appUpdater function and returns a virtual-dom tree.
 // initialState is the initial appState. 
-// appContainer is a DOM element which will contain the rendered application.
+// appContainer is a DOM element in which your rendered app will live.
 
-function run( renderFn, initialState, appContainer ){
+function boot( renderFn, initialState, appContainer ){
   const initialRealizer = realizerForContainer( appContainer );
 
   const initialWorld = {
@@ -39,5 +40,5 @@ function run( renderFn, initialState, appContainer ){
     realizer: initialRealizer
   };
 
-  createAndRunWorldStream(renderFn,initialWorld);
+  createAndRunWorldStream( renderFn, initialWorld );
 }

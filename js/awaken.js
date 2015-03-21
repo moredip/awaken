@@ -1,7 +1,5 @@
 module.exports = {
-  createAppStateUpdater: require('./createAppStateUpdater'),
   createPropMutator: require('./createPropMutator'),
-  realizerForContainer: require('./realizerForContainer'),
-  startDisplay: require('./startDisplay'),
+  boot: require('./boot'),
   h: require('virtual-dom/virtual-hyperscript')
 };

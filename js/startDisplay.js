@@ -14,7 +14,7 @@ function startDisplay( renderFn, initialState, initialRealizer ){
   const display = function display(newState){
     const updater = createAppStateUpdater(newState, stream);
     const tree = renderFn(newState,updater);
-    return {state: newState, realizer: e.realizerFn(tree)}
+    return {state: newState, realizer: e.realizer(tree)}
   };
 
   return stream.reduce({state: initialState, realizer: initialRealizer}, display);

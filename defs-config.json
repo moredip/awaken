@@ -1,5 +1,7 @@
 {
   "globals": {
+          "require": false,
+          "module": false,
           "document": false,
           "Awaken": false
       }

@@ -45,6 +45,19 @@ gulp.task('app-js', function() {
     .pipe(gulp.dest(BUILD_DIR));
 });
 
+gulp.task('awaken-js', function() {
+  var b = browserify({
+    entries: ['./js/awaken.js'],
+    transform: ['browserify-defs'],
+    standalone: 'Awaken'
+  });
+
+  b.bundle()
+    .pipe(plumber())
+    .pipe(source('awaken.js'))
+    .pipe(gulp.dest(BUILD_DIR));
+});
+
 
 gulp.task('copy', function () {
   var inputs = [

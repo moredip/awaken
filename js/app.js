@@ -1,7 +1,5 @@
-const h = require('virtual-dom/virtual-hyperscript'),
-    realizerForContainer = require('./realizerForContainer'),
-    startDisplay = require('./startDisplay'),
-    createPropMutator = require('./createPropMutator');
+const h = Awaken.h,
+    createPropMutator = Awaken.createPropMutator;
 
 function incrOne(x){ return x+1; }
 function decrOne(x){ return x-1; }
@@ -32,7 +30,7 @@ function render(appState, appStateUpdater){
   );
 }
 
-const initialRealizer = realizerForContainer( document.getElementsByTagName('main')[0] ),
+const initialRealizer = Awaken.realizerForContainer( document.getElementsByTagName('main')[0] ),
       initialState = { count:0 };
 
-startDisplay( render, initialState, initialRealizer );
+Awaken.startDisplay( render, initialState, initialRealizer );

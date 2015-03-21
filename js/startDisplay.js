@@ -17,5 +17,6 @@ function startDisplay( renderFn, initialState, initialRealizer ){
     return realizer(tree)
   };
 
-  return stream.reduce(initialRealizer, display);
+  stream.reduce(initialRealizer, display);
+  stream.push(initialState);
 }

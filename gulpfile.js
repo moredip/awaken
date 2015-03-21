@@ -28,7 +28,8 @@ gulp.task('awaken-js', function() {
   var b = browserify({
     entries: ['./js/awaken.js'],
     transform: ['browserify-defs'],
-    standalone: 'Awaken'
+    standalone: 'Awaken',
+    debug: true
   });
 
   b.bundle()

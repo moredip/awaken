@@ -32,5 +32,4 @@ function render(appState, appStateUpdater){
 
 const initialRealizer = Awaken.realizerForContainer( document.getElementsByTagName('main')[0] ),
       initialState = { count:0 };
-
-Awaken.startDisplay( render, initialState, initialRealizer );
+Awaken.startDisplay( render, initialState, initialRealizer)

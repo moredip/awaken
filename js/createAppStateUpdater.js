@@ -1,10 +1,10 @@
 module.exports = createAppStateUpdater;
 
-function createAppStateUpdater(appState, onNewAppState){
+function createAppStateUpdater(appState, stream){
   return function updater(stateTransformer){
     return function(){
       const newAppState = stateTransformer(appState);
-      onNewAppState(newAppState);
+      stream.push(newAppState);
     };
   };
 };

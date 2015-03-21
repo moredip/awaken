@@ -1,4 +1,5 @@
 const createAppStateUpdater = require('./createAppStateUpdater');
+const Bacon = require('baconjs');
 
 module.exports = startDisplay;
 
@@ -17,6 +18,9 @@ function startDisplay( renderFn, initialState, initialRealizer ){
     return realizer(tree)
   };
 
-  stream.reduce(initialRealizer, display);
+  stream.reduce(initialRealizer, display).onValue(function(e){
+    console.log("E", e);
+  });
+
   stream.push(initialState);
 }

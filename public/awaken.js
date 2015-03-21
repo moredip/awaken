@@ -44,6 +44,10 @@ var createElement = require('virtual-dom/create-element'),
 
 module.exports = createInitialRealizerFn;
 
+// A realizer is a function which takes a new virtual-dom tree and makes it "real" by 
+// mutating the actual DOM. Each call to the realizer returns a new realizer which can be used to
+// apply the next mutation.
+
 function createNextRealizerFn(prevTree,prevRootNode){
   return function( newTree ){
     var patches = diff(prevTree,newTree);
@@ -78,9 +82,15 @@ var createAppStateUpdater = require('./createAppStateUpdater');
 
 module.exports = startDisplay;
 
+// Starts the app rendering event cycle.
+//
+// renderFn is a user-defined function which takes an appState and an appUpdater function and returns a virtual-dom tree.
+// initialState is the initial appState. 
+// initialRealizer is the intial virtual-dom-to-real-dom realizer function, usually obtained by calling `realizer` or `realizerForContainer`.
+
 function startDisplay( renderFn, initialState, initialRealizer ){
   var display = function display(appState,realizerFn){
-    // this is a bit weird. onNewAppState closes over nextRealizerFn, even though it won't be assigned a value until a few lines below. This is allowed in JS, but violates referential transparency. I can't see any other way to implement this behaviour though. the onNewAppState handler needs to have access to the output of calling realizerFn below. In order to call realizerFn we need a tree. To create the tree we need onNewAppState to be defined. Catch 22. :(
+    // This is a bit weird. onNewAppState closes over nextRealizerFn, even though it won't be assigned a value until a few lines below. This is allowed in JS, but violates referential transparency. I can't see any other way to implement this behaviour though. the onNewAppState handler needs to have access to the output of calling realizerFn below. In order to call realizerFn we need a tree. To create the tree we need onNewAppState to be defined. Catch 22. :(
     var onNewAppState = function onNewAppState(newState){
       display(newState,nextRealizerFn);                         // nextRealizerFn *referenced* here
     }

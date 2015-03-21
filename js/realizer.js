@@ -4,6 +4,10 @@ const createElement = require('virtual-dom/create-element'),
 
 module.exports = createInitialRealizerFn;
 
+// A realizer is a function which takes a new virtual-dom tree and makes it "real" by 
+// mutating the actual DOM. Each call to the realizer returns a new realizer which can be used to
+// apply the next mutation.
+
 function createNextRealizerFn(prevTree,prevRootNode){
   return function( newTree ){
     const patches = diff(prevTree,newTree);

@@ -11,10 +11,10 @@ module.exports = startDisplay;
 function startDisplay( renderFn, initialState, initialRealizer ){
   const stream = new Bacon.Bus();
 
-  const display = function display(newState, e){
+  const display = function display(acc, newState){
     const updater = createAppStateUpdater(newState, stream);
     const tree = renderFn(newState,updater);
-    return {state: newState, realizer: e.realizer(tree)}
+    return {state: newState, realizer: acc.realizer(tree)}
   };
 
   return stream.reduce({state: initialState, realizer: initialRealizer}, display);

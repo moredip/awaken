@@ -5,7 +5,7 @@ const createAppStateUpdater = require('./createAppStateUpdater'),
 
 module.exports = boot;
 
-const identity = function(_){ return _; };
+function identity(_){ return _; };
 
 function createAndRunWorldStream(renderFn, initialWorld){
   const stateTransformationStream = new Bacon.Bus();

@@ -1,4 +1,5 @@
-const Bacon = require('baconjs');
+const Bacon = require('baconjs'),
+      Immutable = require('immutable');
 const createAppStateUpdater = require('./createAppStateUpdater'),
       realizerForContainer = require('./realizerForContainer');
 
@@ -12,7 +13,8 @@ function createAndRunWorldStream(renderFn, initialWorld){
 
   function worldTransformer(prevWorld,transformer){
     const nextState = transformer(prevWorld.state);
-    const tree = renderFn(nextState,appStateUpdater);
+    const nativeState = nextState.toJS();
+    const tree = renderFn(nativeState,appStateUpdater);
     const nextRealizer = prevWorld.realizer(tree);
     return {
       state: nextState, realizer: nextRealizer
@@ -30,6 +32,8 @@ function createAndRunWorldStream(renderFn, initialWorld){
 // Start rendering the app and processing events.
 //
 // renderFn is a user-defined function which takes an appState and an appUpdater function and returns a virtual-dom tree.
+//    - appState is a raw JS object (not an Immutable)
+//    - appUpdater is a function which takes an Immutable collection and maps it into another Immutable
 // initialState is the initial appState. 
 // appContainer is a DOM element in which your rendered app will live.
 
@@ -37,7 +41,7 @@ function boot( renderFn, initialState, appContainer ){
   const initialRealizer = realizerForContainer( appContainer );
 
   const initialWorld = {
-    state: initialState,
+    state: Immutable.fromJS(initialState),
     realizer: initialRealizer
   };
 

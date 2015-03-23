@@ -13,6 +13,7 @@
     "gulp-plumber": "^0.6.5",
     "gulp-rename": "^1.2.0",
     "gulp-sourcemaps": "^1.1.5",
+    "immutable": "^3.6.4",
     "vinyl-source-stream": "^1.0.0",
     "virtual-dom": "^2.0.1"
   },

@@ -1,7 +1,9 @@
 module.exports = createPropMutator;
 
-function createPropMutator(propertyName,mutator){
+function createPropMutator(keyPathStr,mutator){
+  const keyPath = keyPathStr.split('.');
+
   return function(immutable){
-    return immutable.update(propertyName,mutator);
-  }
+    return immutable.updateIn(keyPath,mutator);
+  };
 }

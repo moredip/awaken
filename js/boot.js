@@ -1,32 +1,45 @@
 const Bacon = require('baconjs'),
-      Immutable = require('immutable');
-const createAppStateUpdater = require('./createAppStateUpdater'),
+      Immutable = require('immutable'),
       realizerForContainer = require('./realizerForContainer');
 
 module.exports = boot;
 
 function identity(_){ return _; };
 
-function createAndRunWorldStream(renderFn, initialWorld){
-  const stateTransformationStream = new Bacon.Bus();
-  const appStateUpdater = createAppStateUpdater(stateTransformationStream);
+function defaulter(fn,defaultValue){
+  return function(x){
+    // TODO: make this more robust
+    return (fn(x) || defaultValue);
+  };
+}
+
+function createAndRunWorldStream(renderFn, reactorFn, initialWorld){
+  const notificationStream = new Bacon.Bus(),
+        notifyFn = function(x){ notificationStream.push(x); };
 
   function worldTransformer(prevWorld,transformer){
-    const nextState = transformer(prevWorld.state);
-    const nativeState = nextState.toJS();
-    const tree = renderFn(nativeState,appStateUpdater);
-    const nextRealizer = prevWorld.realizer(tree);
+    const nextState = transformer(prevWorld.state),
+          nativeState = nextState.toJS(),
+          tree = renderFn(nativeState,notifyFn),
+          nextRealizer = prevWorld.realizer(tree);
+
     return {
-      state: nextState, realizer: nextRealizer
+      state: nextState, 
+      realizer: nextRealizer
     };
   }
 
-  stateTransformationStream
+  const reactorWithNoop = defaulter(reactorFn,identity);
+
+  notificationStream
+    .log('notification:')
+    .map(reactorWithNoop)
     .scan(initialWorld,worldTransformer)
+    .log()
     .onValue(); // this is needed to create a pull through the stream.
 
   // need an initial value pushed through the stream to trigger the first app render
-  stateTransformationStream.push(identity);
+  notificationStream.push(identity);
 }
 
 // Start rendering the app and processing events.
@@ -37,7 +50,7 @@ function createAndRunWorldStream(renderFn, initialWorld){
 // initialState is the initial appState. 
 // appContainer is a DOM element in which your rendered app will live.
 
-function boot( renderFn, initialState, appContainer ){
+function boot( renderFn, initialState, appContainer, reactorFn ){
   const initialRealizer = realizerForContainer( appContainer );
 
   const initialWorld = {
@@ -45,5 +58,5 @@ function boot( renderFn, initialState, appContainer ){
     realizer: initialRealizer
   };
 
-  createAndRunWorldStream( renderFn, initialWorld );
+  createAndRunWorldStream( renderFn, reactorFn, initialWorld );
 }

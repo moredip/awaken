@@ -27,7 +27,8 @@
     "gulp-load-plugins": "^0.9.0",
     "mocha": "^2.2.1",
     "chai": "~1.9.2",
-    "sinon": "^1.14.1"
+    "sinon": "^1.14.1",
+    "sinon-chai": "^2.6.0"
   },
   "scripts": {
     "test": "gulp tests"

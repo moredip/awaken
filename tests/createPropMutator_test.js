@@ -1,4 +1,4 @@
-const expect = require('chai').expect;
+require('./helpers');
 
 const createPropMutator = require('../js/createPropMutator'),
       Immutable = require('immutable');

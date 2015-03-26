@@ -1,14 +1,19 @@
 const h = Awaken.h,
-    createPropMutator = Awaken.createPropMutator;
+    createPropMutator = Awaken.createPropMutator,
+    namespacedNotify = Awaken.namespacedNotify;
 
 function incrOne(x){ return x+1; }
 function decrOne(x){ return x-1; }
-const upper = createPropMutator('count', incrOne )
-const downer = createPropMutator('count', decrOne )
 
-function renderCounter(counterState, appStateUpdater){
-  const countUp = appStateUpdater( upper );
-  const countDown = appStateUpdater( downer );
+function renderCounter(counterState, notifyFn){
+
+  function onClickUp(){
+    notifyFn('up');
+  };
+
+  function onClickDown(){
+    notifyFn('down');
+  };
 
   const content = 'count: '+counterState.count;
   return h(
@@ -20,23 +25,32 @@ function renderCounter(counterState, appStateUpdater){
     ),
     h(
       'button',
-      { onclick: countUp },
+      { onclick: onClickUp },
       'UP'
     ),
     h(
       'button',
-      { onclick: countDown },
+      { onclick: onClickDown },
       'DOWN'
     )
     ]
   );
 }
 
-function render(appState,appStateUpdater){
-  const updaterForA = Awaken.createSubstateUpdater('counter-a',appStateUpdater);
-  const updaterForB = Awaken.createSubstateUpdater('counter-b',appStateUpdater);
-  const counterA = renderCounter(appState['counter-a'],updaterForA);
-  const counterB = renderCounter(appState['counter-b'],updaterForB);
+const reactors = {
+  'a.up': createPropMutator('counter-a.count', incrOne ),
+  'a.down': createPropMutator('counter-a.count', decrOne ),
+  'b.up': createPropMutator('counter-b.count', incrOne ),
+  'b.down': createPropMutator('counter-b.count', decrOne )
+};
+
+function react(notification){
+  return reactors[notification];
+}
+
+function render(appState,notifyFn){
+  const counterA = renderCounter(appState['counter-a'],namespacedNotify('a',notifyFn));
+  const counterB = renderCounter(appState['counter-b'],namespacedNotify('b',notifyFn));
 
   return h(
       'section',
@@ -47,4 +61,4 @@ function render(appState,appStateUpdater){
 const appContainer = document.getElementsByTagName('main')[0];
 const initialState = { 'counter-a':{count:0},'counter-b':{count:10} };
 
-Awaken.boot( render, initialState, appContainer);
+Awaken.boot( render, initialState, appContainer, react );

@@ -39,7 +39,7 @@ gulp.task('awaken-js', function() {
 });
 
 gulp.task('tests', function() {
-  return gulp.src(['tests/**/*.js'], { read: false })
+  return gulp.src(['tests/**/*_test.js'], { read: false })
     .pipe(plugins.mocha({
       reporter: 'spec',
       useColors: false,

@@ -6,9 +6,15 @@ function decrOne(x){ return x-1; }
 const upper = createPropMutator('count', incrOne )
 const downer = createPropMutator('count', decrOne )
 
-function render(appState, appStateUpdater){
-  const countUp = appStateUpdater( upper );
-  const countDown = appStateUpdater( downer );
+function render(appState, notifyFn){
+
+  function onClickUp(){
+    notifyFn('up');
+  };
+
+  function onClickDown(){
+    notifyFn('down');
+  };
 
   const content = 'count: '+appState.count;
   return h(
@@ -20,19 +26,28 @@ function render(appState, appStateUpdater){
     ),
     h(
       'button',
-      { onclick: countUp },
+      { onclick: onClickUp },
       'UP'
     ),
     h(
       'button',
-      { onclick: countDown },
+      { onclick: onClickDown },
       'DOWN'
     )
     ]
   );
 }
 
+const reactors = {
+  up: upper,
+  down: downer
+};
+
+function react(notification){
+  return reactors[notification];
+}
+
 const appContainer = document.getElementsByTagName('main')[0];
 const initialState = { count:0 };
 
-Awaken.boot( render, initialState, appContainer);
+Awaken.boot( render, initialState, appContainer, react );

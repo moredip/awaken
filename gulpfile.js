@@ -1,11 +1,9 @@
 var gulp = require('gulp'),
-    plumber = require('gulp-plumber'),
+    plugins = require('gulp-load-plugins')(),
     del = require('del'),
-    concat = require('gulp-concat'),
-    rename = require('gulp-rename'),
-    defs = require('gulp-defs'),
     source = require('vinyl-source-stream'),
     browserify = require('browserify');
+
 
 var BUILD_DIR = 'public';
 
@@ -19,9 +17,10 @@ gulp.task('app-js', function() {
   b.transform('browserify-defs');
 
   b.bundle()
-    .pipe(plumber())
+    .pipe(plugins.plumber())
     .pipe(source('app.js'))
-    .pipe(gulp.dest(BUILD_DIR));
+    .pipe(gulp.dest(BUILD_DIR))
+    //.on('error', gutil.log);
 });
 
 gulp.task('awaken-js', function() {
@@ -33,9 +32,20 @@ gulp.task('awaken-js', function() {
   });
 
   b.bundle()
-    .pipe(plumber())
+    .pipe(plugins.plumber())
     .pipe(source('awaken.js'))
     .pipe(gulp.dest(BUILD_DIR));
+    //.on('error', gutil.log);
+});
+
+gulp.task('tests', function() {
+  return gulp.src(['tests/**/*.js'], { read: false })
+    .pipe(plugins.mocha({
+      reporter: 'spec',
+      useColors: false,
+      globals: {
+      }
+    }));
 });
 
 
@@ -47,10 +57,11 @@ gulp.task('copy', function () {
     .pipe(gulp.dest(BUILD_DIR));
 });
 
-gulp.task('default', ['awaken-js','app-js','copy']);
+gulp.task('default', ['tests','awaken-js','app-js','copy']);
 
 gulp.task('watch', ['default'], function(){
   //gulp.watch(['css/*.css'], ['copy']);
   gulp.watch(['index.html'], ['copy']);
   gulp.watch(['js/**/*.js'], ['app-js','awaken-js']);
+  gulp.watch(['js/**/*.js','tests/**/*.js'], ['tests']);
 });

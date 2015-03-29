@@ -43,8 +43,7 @@ gulp.task('tests', function() {
     .pipe(plugins.mocha({
       reporter: 'spec',
       useColors: false,
-      globals: {
-      }
+      debug: true
     }));
 });
 

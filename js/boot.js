@@ -1,14 +1,13 @@
 const Bacon = require('baconjs'),
+      _ = require('underscore'),
       Immutable = require('immutable'),
       realizerForContainer = require('./realizerForContainer');
 
 module.exports = boot;
 
-function identity(_){ return _; };
-
 function defaulter(fn,defaultValue){
   return function(x){
-    // TODO: make this more robust
+    // TODO: make this more robust?
     return (fn(x) || defaultValue);
   };
 }
@@ -23,23 +22,24 @@ function createAndRunWorldStream(renderFn, reactorFn, initialWorld){
           tree = renderFn(nativeState,notifyFn),
           nextRealizer = prevWorld.realizer(tree);
 
+    console.log('state:',nativeState);
+
     return {
       state: nextState, 
       realizer: nextRealizer
     };
   }
 
-  const reactorWithNoop = defaulter(reactorFn,identity);
+  const reactorWithNoop = defaulter(reactorFn,_.identity);
 
   notificationStream
     .log('notification:')
     .map(reactorWithNoop)
     .scan(initialWorld,worldTransformer)
-    .log()
     .onValue(); // this is needed to create a pull through the stream.
 
   // need an initial value pushed through the stream to trigger the first app render
-  notificationStream.push(identity);
+  notificationStream.push();
 }
 
 // Start rendering the app and processing events.

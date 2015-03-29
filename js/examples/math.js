@@ -1,6 +1,7 @@
 const h = Awaken.h,
-    createPropMutator = Awaken.createPropMutator,
-    namespacedNotify = Awaken.namespacedNotify;
+      _ = Awaken._,
+      createPropMutator = Awaken.createPropMutator,
+      namespacedNotify = Awaken.namespacedNotify;
 
 function incrOne(x){ return x+1; }
 function decrOne(x){ return x-1; }
@@ -44,17 +45,36 @@ const reactors = {
   'b.down': createPropMutator('counter-b.count', decrOne )
 };
 
+function fnOrIdentity(fn){
+  return (fn || _.identity);
+}
+
+function sumCounters(immutable){
+  const newSum = immutable.getIn(['counter-a','count'],0) + immutable.getIn(['counter-b','count'],0);
+  return immutable.set( 'sum', newSum );
+}
+
 function react(notification){
-  return reactors[notification];
+  const reactor = reactors[notification];
+
+  return Awaken.composeMutators([
+    fnOrIdentity(reactor),
+    sumCounters
+  ]);
 }
 
 function render(appState,notifyFn){
   const counterA = renderCounter(appState['counter-a'],namespacedNotify('a',notifyFn));
   const counterB = renderCounter(appState['counter-b'],namespacedNotify('b',notifyFn));
 
+  const sum = h(
+      'p',
+      'sum: '+appState['sum']
+  );
+
   return h(
       'section',
-      [counterA,counterB]
+      [counterA,counterB,sum]
   );
 }
 

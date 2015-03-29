@@ -46,9 +46,10 @@ function createAndRunWorldStream(renderFn, reactorFn, initialWorld){
 //
 // renderFn is a user-defined function which takes an appState and an appUpdater function and returns a virtual-dom tree.
 //    - appState is a raw JS object (not an Immutable)
-//    - appUpdater is a function which takes an Immutable collection and maps it into another Immutable
+//    - notifier is a function which can be used by event handlers to post notification messages. These messages will be later handled by the supplied reactorFn
 // initialState is the initial appState. 
 // appContainer is a DOM element in which your rendered app will live.
+// reactorFn is a function which maps notification messages into functions which will mutate an Immutable app state into a new app state
 
 function boot( renderFn, initialState, appContainer, reactorFn ){
   const initialRealizer = realizerForContainer( appContainer );

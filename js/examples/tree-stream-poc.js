@@ -4,11 +4,6 @@ const h = Awaken.h,
 const Bacon = require('baconjs'),
       Immutable = require('immutable');
 
-const createTreeStreamForContainer = require('../treeStream');
-
-const appContainer = document.getElementsByTagName('main')[0];
-const treeRealizationStream = createTreeStreamForContainer(appContainer);
-
 function render(appState, notifyFn){
 
   function onClickUp(){
@@ -55,34 +50,7 @@ function react(notification){
   return reactors[notification];
 }
 
-const notificationStream = new Bacon.Bus(),
-      n = function(x){ notificationStream.push(x); };
-
 const initialState = { count:0 };
+const appContainer = document.getElementsByTagName('main')[0];
 
-const reactionStream = notificationStream
-  .log('notification:')
-  .map(react);
-
-
-function appStateTransformer(previousState,transformFn){
-  if( transformFn ){
-    return transformFn(previousState);
-  }else{
-    return previousState;
-  }
-}
-
-const transformedAppStates = reactionStream
-    .scan( Immutable.fromJS(initialState), appStateTransformer )
-
-const treeStream = transformedAppStates
-  .map( function(appState){
-    return render(appState.toJS(),n);
-  });
-
-
-treeRealizationStream.plug( treeStream );
-
-notificationStream.push('startup');
-
+require('../boot2')( render, initialState, appContainer, react );

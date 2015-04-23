@@ -23,10 +23,16 @@ function react(notification){
   return reactor;
 }
 
+function renderTodo(todo,notifyFn){
+  return h('li',[
+      h('div.view',[
+        h('label',todo),
+        h('button.destroy','x')
+      ])]);
+}
+
 function renderTodos(todos,notifyFn){
-  return _.map( todos, function(todo){
-    return h('div.todo',todo);
-  });
+  return h('ul#todo-list', _.map( todos, _.partial(renderTodo,_,notifyFn) ) );
 }
 
 function renderStats(todos,notifyFn){

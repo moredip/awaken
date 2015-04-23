@@ -1,46 +1,9 @@
 const Bacon = require('baconjs'),
       _ = require('underscore'),
       Immutable = require('immutable'),
-      realizerForContainer = require('./realizerForContainer');
+      createTreeRealizerStreamForContainer = require('./treeRealizerStream');
 
 module.exports = boot;
-
-function defaulter(fn,defaultValue){
-  return function(x){
-    // TODO: make this more robust?
-    return (fn(x) || defaultValue);
-  };
-}
-
-function createAndRunWorldStream(renderFn, reactorFn, initialWorld){
-  const notificationStream = new Bacon.Bus(),
-        notifyFn = function(x){ notificationStream.push(x); };
-
-  function worldTransformer(prevWorld,transformer){
-    const nextState = transformer(prevWorld.state),
-          nativeState = nextState.toJS(),
-          tree = renderFn(nativeState,notifyFn),
-          nextRealizer = prevWorld.realizer(tree);
-
-    console.log('state:',nativeState);
-
-    return {
-      state: nextState, 
-      realizer: nextRealizer
-    };
-  }
-
-  const reactorWithNoop = defaulter(reactorFn,_.identity);
-
-  notificationStream
-    .log('notification:')
-    .map(reactorWithNoop)
-    .scan(initialWorld,worldTransformer)
-    .onValue(); // this is needed to create a pull through the stream.
-
-  // need an initial value pushed through the stream to trigger the first app render
-  notificationStream.push();
-}
 
 // Start rendering the app and processing events.
 //
@@ -50,14 +13,37 @@ function createAndRunWorldStream(renderFn, reactorFn, initialWorld){
 // initialState is the initial appState. 
 // appContainer is a DOM element in which your rendered app will live.
 // reactorFn is a function which maps notification messages into functions which will mutate an Immutable app state into a new app state
-
 function boot( renderFn, initialState, appContainer, reactorFn ){
-  const initialRealizer = realizerForContainer( appContainer );
 
-  const initialWorld = {
-    state: Immutable.fromJS(initialState),
-    realizer: initialRealizer
+  const notificationStream = new Bacon.Bus();
+  function publishNotification(notificationName /*, notificationArgs*/){
+    const notificationArgs = Array.prototype.slice.call(arguments, 1);
+    notificationStream.push({
+      name: notificationName,
+      args: notificationArgs
+    });
+  }
+
+  function appStateTransformer(previousState,notification){
+    const transformFn = reactorFn(notification.name);
+    if( transformFn ){
+      return transformFn.apply(null,[previousState].concat(notification.args));
+    }else{
+      return previousState;
+    }
+  }
+
+  function appStateToTree(appState){
+    console.log( 'app state:', appState.toJS() );
+    return renderFn(appState.toJS(),publishNotification);
   };
 
-  createAndRunWorldStream( renderFn, reactorFn, initialWorld );
+  const treeStream = notificationStream
+      .log('notification:')
+      .scan( Immutable.fromJS(initialState), appStateTransformer )
+      .map( appStateToTree );
+
+  createTreeRealizerStreamForContainer(appContainer).plug( treeStream );
+
+  publishNotification('startup');
 }

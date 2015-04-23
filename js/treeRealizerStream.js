@@ -1,13 +1,13 @@
 const Bacon = require('baconjs');
 const createInitialRealizerFn = require('./realizer');
 
-module.exports = createTreeStreamForContainer; 
+module.exports = createTreeRealizerStreamForContainer; 
 
 function applyRealizerToTree(prevRealizerFn, nextTree){
   return prevRealizerFn(nextTree);
 }
 
-function createTreeStreamForContainer(container){
+function createTreeRealizerStreamForContainer(container){
   const treeStream = new Bacon.Bus();
   const initialRealizer = createInitialRealizerFn( container );
 

@@ -23,6 +23,12 @@ function react(notification){
   return reactor;
 }
 
+function renderTodos(todos,notifyFn){
+  return _.map( todos, function(todo){
+    return h('div.todo',todo);
+  });
+}
+
 function renderStats(todos,notifyFn){
   function onNewInputKeypress(e){
     if( e.which === ENTER_KEY ){
@@ -40,7 +46,9 @@ function renderStats(todos,notifyFn){
             //h('h1', 'todos'),
             h('input#new-todo', {onkeypress:onNewInputKeypress,placeholder:'What needs to be done?',autofocus:true})
           ]),
-        h('p', 'total: '+total)
+        h('section#main',
+          renderTodos(todos,notifyFn)
+          )
       ]);
 }
 

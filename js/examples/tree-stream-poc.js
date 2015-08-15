@@ -53,4 +53,4 @@ function react(notification){
 const initialState = { count:0 };
 const appContainer = document.getElementsByTagName('main')[0];
 
-require('../boot2')( render, initialState, appContainer, react );
+require('../boot')( render, initialState, appContainer, react );

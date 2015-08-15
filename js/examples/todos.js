@@ -11,11 +11,12 @@ const reactors = {
     return immutable.update('todos',function(todos){
       return todos.push(newTodo);
     });
+  },
+  'todo-destroy': function(immutable, indexToRemove){
+    return immutable.update('todos',function(todos){
+      return todos.remove(indexToRemove);
+    });
   }
-  //'a.up': createPropMutator('counter-a.count', incrOne ),
-  //'a.down': createPropMutator('counter-a.count', decrOne ),
-  //'b.up': createPropMutator('counter-b.count', incrOne ),
-  //'b.down': createPropMutator('counter-b.count', decrOne )
 };
 
 function react(notification){
@@ -23,16 +24,27 @@ function react(notification){
   return reactor;
 }
 
-function renderTodo(todo,notifyFn){
+function renderTodo(todo,todoIx,notifyFn){
+  function onDestroyClicked(){
+    notifyFn('todo-destroy',todoIx);
+  }
+
   return h('li',[
       h('div.view',[
         h('label',todo),
-        h('button.destroy','x')
+        h(
+          'button.destroy',
+          {onclick:onDestroyClicked}, 
+          'x'
+          )
       ])]);
 }
 
 function renderTodos(todos,notifyFn){
-  return h('ul#todo-list', _.map( todos, _.partial(renderTodo,_,notifyFn) ) );
+  return h(
+    'ul#todo-list', 
+    todos.map( (todo,ix) => renderTodo( todo, ix, notifyFn ) )
+  );
 }
 
 function renderStats(todos,notifyFn){
@@ -49,7 +61,6 @@ function renderStats(todos,notifyFn){
       [
         h('header#header',
           [
-            //h('h1', 'todos'),
             h('input#new-todo', {onkeypress:onNewInputKeypress,placeholder:'What needs to be done?',autofocus:true})
           ]),
         h('section#main',
@@ -59,9 +70,6 @@ function renderStats(todos,notifyFn){
 }
 
 function render(appState,notifyFn){
-  //const counterA = renderCounter(appState['counter-a'],namespacedNotify('a',notifyFn));
-  //const counterB = renderCounter(appState['counter-b'],namespacedNotify('b',notifyFn));
-
   return h(
       'section',
       [

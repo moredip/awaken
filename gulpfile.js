@@ -26,7 +26,7 @@ gulp.task('app-js', function() {
 gulp.task('awaken-js', function() {
   var b = browserify({
     entries: ['./js/awaken.js'],
-    transform: ['browserify-defs'],
+    transform: [babelify],
     standalone: 'Awaken',
     debug: true
   });

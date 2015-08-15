@@ -7,9 +7,15 @@ const ENTER_KEY = 13,
       ESC_KEY = 27;
 
 const reactors = {
-  'new-todo-enter': function(immutable, newTodo){
-    return immutable.update('todos',function(todos){
-      return todos.push(newTodo);
+  'new-todo-update': function(immutable, text){
+    return immutable.set('newTodoText',text);
+  },
+  'new-todo-enter': function(immutable){
+    const newTodoText = immutable.get('newTodoText');
+    return immutable
+      .set('newTodoText','')
+      .update('todos',function(todos){
+      return todos.push(newTodoText);
     });
   },
   'todo-destroy': function(immutable, indexToRemove){
@@ -47,24 +53,29 @@ function renderTodos(todos,notifyFn){
   );
 }
 
-function renderStats(todos,notifyFn){
+function renderStats(appState,notifyFn){
   function onNewInputKeypress(e){
+    const target = e.target || e.srcElement;
+
     if( e.which === ENTER_KEY ){
-      const target = e.target || e.srcElement;
-      notifyFn('new-todo-enter',target.value);
+      notifyFn('new-todo-enter');
+    }else{
+      notifyFn('new-todo-update',target.value);
     }
   };
 
-  const total = todos.length;
   return h(
       'div',
       [
         h('header#header',
           [
-            h('input#new-todo', {onkeypress:onNewInputKeypress,placeholder:'What needs to be done?',autofocus:true})
+            h(
+              'input#new-todo', 
+              {onkeyup:onNewInputKeypress,placeholder:'What needs to be done?',autofocus:true,value:appState.newTodoText}
+            )
           ]),
         h('section#main',
-          renderTodos(todos,notifyFn)
+          renderTodos(appState.todos,notifyFn)
           )
       ]);
 }
@@ -74,7 +85,7 @@ function render(appState,notifyFn){
       'section',
       [
         h('h1','TODOs'),
-        renderStats(appState.todos,notifyFn)
+        renderStats(appState,notifyFn)
       ]
   );
 }

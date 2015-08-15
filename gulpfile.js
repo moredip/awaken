@@ -2,8 +2,8 @@ var gulp = require('gulp'),
     plugins = require('gulp-load-plugins')(),
     del = require('del'),
     source = require('vinyl-source-stream'),
-    browserify = require('browserify');
-
+    browserify = require('browserify'),
+    babelify = require('babelify');
 
 var BUILD_DIR = 'public';
 
@@ -14,7 +14,7 @@ gulp.task('clean', function (cb) {
 gulp.task('app-js', function() {
 
   var b = browserify('./js/app.js');
-  b.transform('browserify-defs');
+  b.transform(babelify);
 
   b.bundle()
     .pipe(plugins.plumber())

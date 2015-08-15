@@ -20,14 +20,12 @@
     "virtual-dom": "^2.0.1"
   },
   "devDependencies": {
-    "browserify-defs": "^0.1.0",
-    "defs": "^1.1.0",
+    "babelify": "^6.1.3",
+    "chai": "~1.9.2",
     "del": "^1.1.1",
     "gulp": "^3.8.11",
-    "gulp-defs": "0.0.1",
     "gulp-load-plugins": "^0.9.0",
     "mocha": "^2.2.1",
-    "chai": "~1.9.2",
     "sinon": "^1.14.1",
     "sinon-chai": "^2.6.0"
   },

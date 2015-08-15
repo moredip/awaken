@@ -1,6 +1,4 @@
-const h = Awaken.h,
-      _ = Awaken._,
-      Immutable = require('immutable');
+const {h,_,Immutable} = Awaken;
 
 const ENTER_KEY = 13,
       ESC_KEY = 27;

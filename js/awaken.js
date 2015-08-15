@@ -5,5 +5,6 @@ module.exports = {
   boot: require('./boot'),
 
   h: require('virtual-dom/virtual-hyperscript'),
-  _: require('underscore')
+  _: require('underscore'),
+  Immutable: require('immutable'),
 };

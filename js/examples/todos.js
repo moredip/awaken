@@ -1,43 +1,62 @@
 const h = Awaken.h,
       _ = Awaken._,
-      createPropMutator = Awaken.createPropMutator,
-      namespacedNotify = Awaken.namespacedNotify;
+      Immutable = require('immutable');
 
 const ENTER_KEY = 13,
       ESC_KEY = 27;
+
+function targetFromEvent(e){
+  return e.target || e.srcElement;
+}
+
+function createTodo(todoText){
+  return  Immutable.fromJS({
+    text: todoText,
+    completed: false
+  });
+}
 
 const reactors = {
   'new-todo-update': function(immutable, text){
     return immutable.set('newTodoText',text);
   },
   'new-todo-enter': function(immutable){
-    const newTodoText = immutable.get('newTodoText');
+    const newTodo = createTodo( immutable.get('newTodoText') );
+
     return immutable
       .set('newTodoText','')
       .update('todos',function(todos){
-      return todos.push(newTodoText);
+      return todos.push(newTodo);
     });
   },
-  'todo-destroy': function(immutable, indexToRemove){
+  'todo-destroy': function(immutable, todoIx){
     return immutable.update('todos',function(todos){
-      return todos.remove(indexToRemove);
+      return todos.remove(todoIx);
+    });
+  },
+  'todo-completion-toggled': function(immutable,todoIx,completionState){
+    return immutable.update('todos',function(todos){
+      return todos.update(todoIx, (todo) => todo.set('completed',completionState))
     });
   }
 };
 
-function react(notification){
-  const reactor = reactors[notification];
-  return reactor;
-}
+const lookupReactor = (notification) => reactors[notification]
 
 function renderTodo(todo,todoIx,notifyFn){
   function onDestroyClicked(){
+    console.log('asdfasdf')
     notifyFn('todo-destroy',todoIx);
+  }
+
+  function onCompletedChanged(e){
+    notifyFn('todo-completion-toggled',todoIx,targetFromEvent(e).checked);
   }
 
   return h('li',[
       h('div.view',[
-        h('label',todo),
+        h('input.completed',{type:'checkbox',onchange:onCompletedChanged,checked:todo.completed}),
+        h('label',todo.text),
         h(
           'button.destroy',
           {onclick:onDestroyClicked}, 
@@ -53,14 +72,18 @@ function renderTodos(todos,notifyFn){
   );
 }
 
-function renderStats(appState,notifyFn){
-  function onNewInputKeypress(e){
-    const target = e.target || e.srcElement;
+function renderStats(todos,notifyFn){
+  const uncompleteCount = _.countBy(todos, (t) => t.completed)[false] || 0;
+  const noun = (uncompleteCount === 1) ? 'item' : 'items';
+  return h( 'p', `${uncompleteCount} ${noun} left` );
+}
 
+function renderBody(appState,notifyFn){
+  function onNewInputKeypress(e){
     if( e.which === ENTER_KEY ){
       notifyFn('new-todo-enter');
     }else{
-      notifyFn('new-todo-update',target.value);
+      notifyFn('new-todo-update',targetFromEvent(e).value);
     }
   };
 
@@ -75,7 +98,10 @@ function renderStats(appState,notifyFn){
             )
           ]),
         h('section#main',
-          renderTodos(appState.todos,notifyFn)
+          [
+            renderTodos(appState.todos,notifyFn),
+            renderStats(appState.todos)
+          ]
           )
       ]);
 }
@@ -85,12 +111,12 @@ function render(appState,notifyFn){
       'section',
       [
         h('h1','TODOs'),
-        renderStats(appState,notifyFn)
+        renderBody(appState,notifyFn)
       ]
   );
 }
 
 const appContainer = document.getElementsByTagName('main')[0];
-const initialState = { 'todos': [] };
+const initialState = { 'todos': [], 'newTodoText': '' };
 
-Awaken.boot( render, initialState, appContainer, react );
+Awaken.boot( render, initialState, appContainer, lookupReactor );

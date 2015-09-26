@@ -1,4 +1,5 @@
 const {h,_,Immutable} = Awaken;
+const iff = require('../iff');
 
 const ENTER_KEY = 13,
       ESC_KEY = 27;
@@ -36,6 +37,13 @@ const reactors = {
     return immutable.update('todos',function(todos){
       return todos.update(todoIx, (todo) => todo.set('completed',completionState))
     });
+  },
+  'completion-toggle-all': function(immutable){
+    return immutable.update('todos', function(todos){
+      const allTodosAreComplete = todos.every( (todo) => todo.get('completed') );
+      const newCompleteness = !allTodosAreComplete;
+      return todos.map((todo) => todo.set('completed',newCompleteness));
+    });
   }
 };
 
@@ -43,7 +51,6 @@ const lookupReactor = (notification) => reactors[notification]
 
 function renderTodo(todo,todoIx,notifyFn){
   function onDestroyClicked(){
-    console.log('asdfasdf')
     notifyFn('todo-destroy',todoIx);
   }
 
@@ -85,6 +92,16 @@ function renderBody(appState,notifyFn){
     }
   };
 
+  function onToggleAll(e){
+    notifyFn('completion-toggle-all');
+  }
+
+  const someTodos = appState.todos.length > 0;
+
+  const everyTodoCompleted = appState.todos.every( (todo) => todo.completed );
+
+
+
   return h(
       'div',
       [
@@ -97,6 +114,12 @@ function renderBody(appState,notifyFn){
           ]),
         h('section#main',
           [
+            iff(someTodos, function(){ 
+              return h(
+                'input.toggle-all',
+                {type:'checkbox',onchange:onToggleAll,checked:everyTodoCompleted}
+              );
+            }),
             renderTodos(appState.todos,notifyFn),
             renderStats(appState.todos)
           ]

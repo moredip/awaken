@@ -4,8 +4,9 @@ function jsxToHyperscriptAdapter(name,props,...children){
   return h(name,props,children);
 }
 
-const {h,_,Immutable} = Awaken;
+const classNames = require('classnames');
 const iff = require('../iff');
+const {h,_,Immutable} = Awaken;
 
 const ENTER_KEY = 13,
       ESC_KEY = 27;
@@ -17,7 +18,8 @@ function targetFromEvent(e){
 function createTodo(todoText){
   return  Immutable.fromJS({
     text: todoText,
-    completed: false
+    completed: false,
+    uid: _.uniqueId('todo:')
   });
 }
 
@@ -34,13 +36,15 @@ const reactors = {
       return todos.push(newTodo);
     });
   },
-  'todo-destroy': function(immutable, todoIx){
+  'todo-destroy': function(immutable, todoUid){
     return immutable.update('todos',function(todos){
-      return todos.remove(todoIx);
+      return todos.filterNot( (todo) => todo.get('uid') === todoUid );
     });
   },
-  'todo-completion-toggled': function(immutable,todoIx,completionState){
+  'todo-completion-toggled': function(immutable,todoUid,completionState){
     return immutable.update('todos',function(todos){
+      const todoIx = todos.findIndex( (todo) => todo.get('uid') === todoUid );
+
       return todos.update(todoIx, (todo) => todo.set('completed',completionState))
     });
   },
@@ -50,21 +54,24 @@ const reactors = {
       const newCompleteness = !allTodosAreComplete;
       return todos.map((todo) => todo.set('completed',newCompleteness));
     });
+  },
+  'set-filter': function(immutable,filter){
+    return immutable.set('filter',filter);
   }
 };
 
 const lookupReactor = (notification) => reactors[notification]
 
-function renderTodo(todo,todoIx,notifyFn){
+function renderTodo(todo,notifyFn){
   function onDestroyClicked(){
-    notifyFn('todo-destroy',todoIx);
+    notifyFn('todo-destroy',todo.uid);
   }
 
   function onCompletedChanged(e){
-    notifyFn('todo-completion-toggled',todoIx,targetFromEvent(e).checked);
+    notifyFn('todo-completion-toggled',todo.uid,targetFromEvent(e).checked);
   }
 
-  return <li>
+  return <li key={todo.uid}>
     <div className="view">
       <input className="completed" type="checkbox" onchange={onCompletedChanged} checked={todo.completed}/>
       <label>{todo.text}</label>
@@ -75,7 +82,7 @@ function renderTodo(todo,todoIx,notifyFn){
 
 function renderTodos(todos,notifyFn){
   return <ul id="todo-list">
-    {todos.map( (todo,ix) => renderTodo( todo, ix, notifyFn ) )}
+    {todos.map( (todo) => renderTodo( todo, notifyFn ) )}
   </ul>;
 }
 
@@ -85,6 +92,41 @@ function renderStats(todos,notifyFn){
 
   return <p>{uncompleteCount} {noun} left</p>;
 }
+
+function renderFilters(appState,notifyFn){
+  const filters = ['All','Active','Completed'].map( function(filter){
+    const lfilter = filter.toLowerCase();
+    return <li><a 
+      href="#" 
+      onclick={()=>notifyFn('set-filter',lfilter)}
+      className={classNames({selected: lfilter === appState.filter})}
+      >
+      {filter}
+    </a></li>
+  });
+
+
+  return <ul className="filters">
+    {filters}
+  </ul>;
+}
+
+function filterTodos(todos,filter){
+  function rejectCompleted(todos){
+    return _.reject(todos, (todo) => todo.completed)
+  }
+  function selectCompleted(todos){
+    return _.filter(todos, (todo) => todo.completed)
+  }
+  const todoFilters = {
+    all: _.identity,
+    active: rejectCompleted,
+    completed: selectCompleted
+  }
+
+  return todoFilters[filter](todos);
+}
+
 
 function renderBody(appState,notifyFn){
   function onNewInputKeypress(e){
@@ -99,11 +141,9 @@ function renderBody(appState,notifyFn){
     notifyFn('completion-toggle-all');
   }
 
-  const someTodos = appState.todos.length > 0;
-
+  const thereAreSomeTodos = appState.todos.length > 0;
   const everyTodoCompleted = appState.todos.every( (todo) => todo.completed );
-
-
+  const filteredTodos = filterTodos(appState.todos,appState.filter);
 
   return <div>
     <header id="header">
@@ -116,13 +156,16 @@ function renderBody(appState,notifyFn){
         />
     </header>
     <section id="main">
-      {iff(someTodos, () =>
+      {iff(thereAreSomeTodos, () =>
           <input className="toggle-all" type="checkbox" onchange={onToggleAll} checked={everyTodoCompleted}></input>
           )
       }
-      {renderTodos(appState.todos,notifyFn)}
-      {renderStats(appState.todos)}
+      {renderTodos(filteredTodos,notifyFn)}
     </section>
+    <footer className="footer">
+      {renderStats(appState.todos,notifyFn)}
+      {renderFilters(appState,notifyFn)}
+    </footer>
   </div>;
 }
 
@@ -134,6 +177,6 @@ function render(appState,notifyFn){
 }
 
 const appContainer = document.getElementsByTagName('main')[0];
-const initialState = { 'todos': [], 'newTodoText': '' };
+const initialState = { 'todos': [], 'newTodoText': '', filter: 'all' };
 
 Awaken.boot( render, initialState, appContainer, lookupReactor );

@@ -55,6 +55,11 @@ const reactors = {
       return todos.map((todo) => todo.set('completed',newCompleteness));
     });
   },
+  'clear-completed-todos': function(immutable){
+    return immutable.update('todos', function(todos){
+      return todos.filterNot( (todo) => todo.get('completed') );
+    });
+  },
   'set-filter': function(immutable,filter){
     return immutable.set('filter',filter);
   }
@@ -140,10 +145,18 @@ function renderBody(appState,notifyFn){
   function onToggleAll(e){
     notifyFn('completion-toggle-all');
   }
+  function onClearCompleted(e){
+    notifyFn('clear-completed-todos');
+  }
 
-  const thereAreSomeTodos = appState.todos.length > 0;
-  const everyTodoCompleted = appState.todos.every( (todo) => todo.completed );
-  const filteredTodos = filterTodos(appState.todos,appState.filter);
+  const allTodos = appState.todos;
+  const [completedTodos,activeTodos] = _.partition(allTodos,(todo)=>todo.completed);
+
+  const thereAreSomeTodos = allTodos.length > 0;
+  const everyTodoIsCompleted = activeTodos.length === 0;
+  const someTodosAreCompleted = completedTodos.length > 0;
+
+  const filteredTodos = filterTodos(allTodos,appState.filter);
 
   return <div>
     <header id="header">
@@ -157,7 +170,7 @@ function renderBody(appState,notifyFn){
     </header>
     <section id="main">
       {iff(thereAreSomeTodos, () =>
-          <input className="toggle-all" type="checkbox" onchange={onToggleAll} checked={everyTodoCompleted}></input>
+          <input className="toggle-all" type="checkbox" onchange={onToggleAll} checked={everyTodoIsCompleted}></input>
           )
       }
       {renderTodos(filteredTodos,notifyFn)}
@@ -165,6 +178,10 @@ function renderBody(appState,notifyFn){
     <footer className="footer">
       {renderStats(appState.todos,notifyFn)}
       {renderFilters(appState,notifyFn)}
+      {iff(someTodosAreCompleted, ()=>
+        <button id="clear-completed" onclick={onClearCompleted}>Clear completed</button>
+        )
+      }
     </footer>
   </div>;
 }

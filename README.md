@@ -9,8 +9,6 @@ gulp watch
 
 ## TODOS
 - finish todos example
- - filter by complete and incomplete
- - clear completed
  - edit
  - css
  - local storage?

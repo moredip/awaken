@@ -1,3 +1,9 @@
+/** @jsx jsxToHyperscriptAdapter */
+
+function jsxToHyperscriptAdapter(name,props,...children){
+  return h(name,props,children);
+}
+
 const {h,_,Immutable} = Awaken;
 const iff = require('../iff');
 
@@ -58,29 +64,26 @@ function renderTodo(todo,todoIx,notifyFn){
     notifyFn('todo-completion-toggled',todoIx,targetFromEvent(e).checked);
   }
 
-  return h('li',[
-      h('div.view',[
-        h('input.completed',{type:'checkbox',onchange:onCompletedChanged,checked:todo.completed}),
-        h('label',todo.text),
-        h(
-          'button.destroy',
-          {onclick:onDestroyClicked}, 
-          'x'
-          )
-      ])]);
+  return <li>
+    <div className="view">
+      <input className="completed" type="checkbox" onchange={onCompletedChanged} checked={todo.completed}/>
+      <label>{todo.text}</label>
+      <button className="destroy" onclick={onDestroyClicked}>x</button>
+    </div>
+    </li>;
 }
 
 function renderTodos(todos,notifyFn){
-  return h(
-    'ul#todo-list', 
-    todos.map( (todo,ix) => renderTodo( todo, ix, notifyFn ) )
-  );
+  return <ul id="todo-list">
+    {todos.map( (todo,ix) => renderTodo( todo, ix, notifyFn ) )}
+  </ul>;
 }
 
 function renderStats(todos,notifyFn){
   const uncompleteCount = _.countBy(todos, (t) => t.completed)[false] || 0;
   const noun = (uncompleteCount === 1) ? 'item' : 'items';
-  return h( 'p', `${uncompleteCount} ${noun} left` );
+
+  return <p>{uncompleteCount} {noun} left</p>;
 }
 
 function renderBody(appState,notifyFn){
@@ -102,39 +105,32 @@ function renderBody(appState,notifyFn){
 
 
 
-  return h(
-      'div',
-      [
-        h('header#header',
-          [
-            h(
-              'input#new-todo', 
-              {onkeyup:onNewInputKeypress,placeholder:'What needs to be done?',autofocus:true,value:appState.newTodoText}
-            )
-          ]),
-        h('section#main',
-          [
-            iff(someTodos, function(){ 
-              return h(
-                'input.toggle-all',
-                {type:'checkbox',onchange:onToggleAll,checked:everyTodoCompleted}
-              );
-            }),
-            renderTodos(appState.todos,notifyFn),
-            renderStats(appState.todos)
-          ]
+  return <div>
+    <header id="header">
+      <input 
+        id="new-todo"
+        onkeyup={onNewInputKeypress}
+        placeholder="What needs to be done?"
+        autofocus="true"
+        value={appState.newTodoText}
+        />
+    </header>
+    <section id="main">
+      {iff(someTodos, () =>
+          <input className="toggle-all" type="checkbox" onchange={onToggleAll} checked={everyTodoCompleted}></input>
           )
-      ]);
+      }
+      {renderTodos(appState.todos,notifyFn)}
+      {renderStats(appState.todos)}
+    </section>
+  </div>;
 }
 
 function render(appState,notifyFn){
-  return h(
-      'section',
-      [
-        h('h1','TODOs'),
-        renderBody(appState,notifyFn)
-      ]
-  );
+  return <section>
+    <h1>TODOS</h1>
+    {renderBody(appState,notifyFn)}
+  </section>;
 }
 
 const appContainer = document.getElementsByTagName('main')[0];

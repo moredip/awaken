@@ -50,7 +50,8 @@ gulp.task('tests', function() {
 
 gulp.task('copy', function () {
   var inputs = [
-    'index.html'
+    'index.html',
+    'node_modules/todomvc-app-css/index.css'
   ];
   gulp.src(inputs)
     .pipe(gulp.dest(BUILD_DIR));

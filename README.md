@@ -11,7 +11,11 @@ gulp watch
 - finish todos example
  - refactor/cleanup of code duplication from implementing edit
  - figure out some way to componentize the editor component
- - css
+
+ - save edit on lose focus
+ - delete todo if editted to an empty string
+ - don't create an empty todo
+
  - UI-based tests
  - non-browser system tests
  - local storage?

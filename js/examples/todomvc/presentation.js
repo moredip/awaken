@@ -34,8 +34,9 @@ function renderTodoEditor(todo,notifyFn){
   };
 
   return <input 
-        onkeyup={onNewInputKeypress}
-        value={todo.editingText}
+          className="edit"
+          onkeyup={onNewInputKeypress}
+          value={todo.editingText}
         />;
 }
 
@@ -51,17 +52,21 @@ function renderTodo(todo,notifyFn){
   const todoIsBeingEditted = typeof todo.editingText !== 'undefined';
   const todoTextRenderer = todoIsBeingEditted ? renderTodoEditor : renderTodoLabel;
 
-  return <li key={todo.uid}>
-    <div className="view">
-      <input className="completed" type="checkbox" onchange={onCompletedChanged} checked={todo.completed}/>
-      {todoTextRenderer(todo,notifyFn)}
-      <button className="destroy" onclick={onDestroyClicked}>x</button>
-    </div>
+  return <li 
+      key={todo.uid} 
+      className={classNames({completed:todo.completed,editing:todoIsBeingEditted})}
+    >
+      <div className="view">
+        <input className="toggle" type="checkbox" onchange={onCompletedChanged} checked={todo.completed}/>
+        {iff(!todoIsBeingEditted,()=>renderTodoLabel(todo,notifyFn))}
+        <button className="destroy" onclick={onDestroyClicked}></button>
+      </div>
+      {iff(todoIsBeingEditted,()=>renderTodoEditor(todo,notifyFn))}
     </li>;
 }
 
 function renderTodos(todos,notifyFn){
-  return <ul id="todo-list">
+  return <ul className="todo-list">
     {todos.map( (todo) => renderTodo( todo, notifyFn ) )}
   </ul>;
 }
@@ -70,7 +75,7 @@ function renderStats(todos,notifyFn){
   const uncompleteCount = _.countBy(todos, (t) => t.completed)[false] || 0;
   const noun = (uncompleteCount === 1) ? 'item' : 'items';
 
-  return <p>{uncompleteCount} {noun} left</p>;
+  return <span className="todo-count">{uncompleteCount} {noun} left</span>;
 }
 
 function renderFilters(appState,notifyFn){
@@ -134,16 +139,16 @@ function renderBody(appState,notifyFn){
   const filteredTodos = filterTodos(allTodos,appState.filter);
 
   return <div>
-    <header id="header">
+    <header className="header">
       <input 
-        id="new-todo"
+        className="new-todo"
         onkeyup={onNewInputKeypress}
         placeholder="What needs to be done?"
         autofocus="true"
         value={appState.newTodoText}
         />
     </header>
-    <section id="main">
+    <section className="main">
       {iff(thereAreSomeTodos, () =>
           <input className="toggle-all" type="checkbox" onchange={onToggleAll} checked={everyTodoIsCompleted}></input>
           )
@@ -154,7 +159,7 @@ function renderBody(appState,notifyFn){
       {renderStats(appState.todos,notifyFn)}
       {renderFilters(appState,notifyFn)}
       {iff(someTodosAreCompleted, ()=>
-        <button id="clear-completed" onclick={onClearCompleted}>Clear completed</button>
+        <button className="clear-completed" onclick={onClearCompleted}>Clear completed</button>
         )
       }
     </footer>
@@ -162,8 +167,8 @@ function renderBody(appState,notifyFn){
 }
 
 function render(appState,notifyFn){
-  return <section>
-    <h1>TODOS</h1>
+  return <section className="todoapp">
+    <h1>todos</h1>
     {renderBody(appState,notifyFn)}
   </section>;
 }

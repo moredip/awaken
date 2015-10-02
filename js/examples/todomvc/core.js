@@ -22,6 +22,10 @@ function updateTodo(immutableRoot,todoUid,todoUpdater){
   });
 }
 
+function removeEmptyTodos(todos){
+  return todos.filterNot( (todo) => _.isEmpty(todo.get('text')) );
+}
+
 const reactors = {
   'new-todo-update': function(immutable, text){
     return immutable.set('newTodoText',text);
@@ -43,11 +47,13 @@ const reactors = {
     });
   },
   'edit-todo-commit': function(immutable,todoUid){
-    return updateTodo(immutable,todoUid, function (todo){
+    immutable = updateTodo(immutable,todoUid, function (todo){
       return todo
         .set('text',todo.get('editingText'))
         .delete('editingText');
     });
+
+    return immutable.update('todos',removeEmptyTodos);
   },
   'edit-todo-abort': function(immutable,todoUid){
     return updateTodo(immutable,todoUid, (todo) => todo.delete('editingText'));

@@ -13,7 +13,6 @@ gulp watch
  - figure out some way to componentize the editor component
 
  - save edit on lose focus
- - delete todo if editted to an empty string
 
  - UI-based tests
  - non-browser system tests

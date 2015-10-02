@@ -33,9 +33,14 @@ function renderTodoEditor(todo,notifyFn){
     }
   };
 
+  function onBlur(e){
+    notifyFn('edit-todo-commit',todo.uid);
+  }
+
   return <input 
           className="edit"
           onkeyup={onNewInputKeypress}
+          onblur={onBlur}
           value={todo.editingText}
         />;
 }

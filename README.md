@@ -9,6 +9,7 @@ gulp watch
 
 ## TODOS
 - finish todos example
- - edit
+ - refactor/cleanup of code duplication from implementing edit
+ - figure out some way to componentize the editor component
  - css
  - local storage?

@@ -27,6 +27,13 @@ const reactors = {
   'new-todo-update': function(immutable, text){
     return immutable.set('newTodoText',text);
   },
+  'edit-todo-update': function(immutable, todoUid, text){
+    return immutable.update('todos',function(todos){
+      const todoIx = todos.findIndex( (todo) => todo.get('uid') === todoUid );
+
+      return todos.update(todoIx, (todo) => todo.set('editingText',text));
+    });
+  },
   'new-todo-enter': function(immutable){
     const newTodo = createTodo( immutable.get('newTodoText') );
 
@@ -36,9 +43,42 @@ const reactors = {
       return todos.push(newTodo);
     });
   },
+  'edit-todo-commit': function(immutable,todoUid){
+    function todoUpdater(todo){
+      return todo
+        .set('text',todo.get('editingText'))
+        .delete('editingText');
+    }
+
+    return immutable.update('todos',function(todos){
+      const todoIx = todos.findIndex( (todo) => todo.get('uid') === todoUid );
+
+      return todos.update(todoIx, todoUpdater);
+    });
+  },
+  'edit-todo-abort': function(immutable,todoUid){
+    return immutable.update('todos',function(todos){
+      const todoIx = todos.findIndex( (todo) => todo.get('uid') === todoUid );
+
+      return todos.update(todoIx, (todo) => todo.delete('editingText'));
+    });
+  },
   'todo-destroy': function(immutable, todoUid){
     return immutable.update('todos',function(todos){
       return todos.filterNot( (todo) => todo.get('uid') === todoUid );
+    });
+  },
+  'todo-edit-requested': function(immutable,todoUid){
+    function todoUpdater(todo){
+      if(todo.get('uid') === todoUid){
+        return todo.set('editingText',todo.get('text'));
+      }else{
+        return todo.delete('editingText');
+      }
+    };
+
+    return immutable.update('todos',function(todos){
+      return todos.map(todoUpdater);
     });
   },
   'todo-completion-toggled': function(immutable,todoUid,completionState){
@@ -67,6 +107,30 @@ const reactors = {
 
 const lookupReactor = (notification) => reactors[notification]
 
+function renderTodoLabel(todo,notifyFn){
+  function onLabelDoubleClicked(){
+    notifyFn('todo-edit-requested',todo.uid);
+  }
+  return <label ondblclick={onLabelDoubleClicked}>{todo.text}</label>
+}
+
+function renderTodoEditor(todo,notifyFn){
+  function onNewInputKeypress(e){
+    if( e.which === ENTER_KEY ){
+      notifyFn('edit-todo-commit',todo.uid);
+    }else if( e.which === ESC_KEY ){
+      notifyFn('edit-todo-abort',todo.uid);
+    }else{
+      notifyFn('edit-todo-update',todo.uid,targetFromEvent(e).value);
+    }
+  };
+
+  return <input 
+        onkeyup={onNewInputKeypress}
+        value={todo.editingText}
+        />;
+}
+
 function renderTodo(todo,notifyFn){
   function onDestroyClicked(){
     notifyFn('todo-destroy',todo.uid);
@@ -76,10 +140,12 @@ function renderTodo(todo,notifyFn){
     notifyFn('todo-completion-toggled',todo.uid,targetFromEvent(e).checked);
   }
 
+  const todoTextRenderer = todo.editingText ? renderTodoEditor : renderTodoLabel;
+
   return <li key={todo.uid}>
     <div className="view">
       <input className="completed" type="checkbox" onchange={onCompletedChanged} checked={todo.completed}/>
-      <label>{todo.text}</label>
+      {todoTextRenderer(todo,notifyFn)}
       <button className="destroy" onclick={onDestroyClicked}>x</button>
     </div>
     </li>;

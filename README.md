@@ -12,4 +12,3 @@ gulp watch
  - edit
  - css
  - local storage?
-- investigate using JSX, perhaps via https://www.npmjs.com/package/virtual-dom-jsx

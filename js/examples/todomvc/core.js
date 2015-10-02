@@ -1,7 +1,13 @@
 const {_,Immutable} = Awaken;
 
+const initialAppState = { 
+  todos: [], 
+  newTodoText: '', 
+  filter: 'all' 
+};
+
 function createTodo(todoText){
-  return  Immutable.fromJS({
+  return Immutable.Map({
     text: todoText,
     completed: false,
     uid: _.uniqueId('todo:')
@@ -80,8 +86,11 @@ const reactors = {
   }
 };
 
-const lookupReactor = (notification) => reactors[notification]
+function lookupReactor(notification){
+  return reactors[notification];
+}
 
 module.exports = {
-  lookupReactor: lookupReactor
-}
+  lookupReactor,
+  initialAppState
+};

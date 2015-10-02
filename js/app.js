@@ -1,4 +1,4 @@
 //require('./examples/tree-stream-poc');
-require('./examples/todos');
+require('./examples/todomvc/main');
 //require('./examples/math');
 //require('./examples/simple-counter');

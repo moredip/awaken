@@ -30,8 +30,12 @@ const reactors = {
     return updateTodo(immutable,todoUid, (todo) => todo.set('editingText',text))
   },
   'new-todo-enter': function(immutable){
-    const newTodo = createTodo( immutable.get('newTodoText') );
+    const trimmedText = immutable.get('newTodoText').trim();
+    if( _.isEmpty(trimmedText) ){
+      return immutable;
+    }
 
+    const newTodo = createTodo(trimmedText);
     return immutable
       .set('newTodoText','')
       .update('todos',function(todos){

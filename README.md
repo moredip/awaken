@@ -14,7 +14,6 @@ gulp watch
 
  - save edit on lose focus
  - delete todo if editted to an empty string
- - don't create an empty todo
 
  - UI-based tests
  - non-browser system tests

@@ -16,3 +16,6 @@ gulp watch
  - non-browser system tests
  - local storage?
  - router for #filters
+
+- time traveller
+ - branching/alternate history capability

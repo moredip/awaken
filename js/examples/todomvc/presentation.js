@@ -8,6 +8,8 @@ const {h,_} = Awaken;
 const classNames = require('classnames');
 const iff = require('../../iff');
 
+const inputComponent = require('./inputComponent');
+
 const ENTER_KEY = 13,
       ESC_KEY = 27;
 
@@ -145,10 +147,11 @@ function renderBody(appState,notifyFn){
 
   return <div>
     <header className="header">
+      {inputComponent.render(appState,'new-todo',notifyFn)}
       <input 
         className="new-todo"
         onkeyup={onNewInputKeypress}
-        placeholder="What needs to be done?"
+        placeholder="Just exactly what needs to be done?"
         autofocus="true"
         value={appState.newTodoText}
         />

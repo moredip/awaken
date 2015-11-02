@@ -27,13 +27,13 @@ function removeEmptyTodos(todos){
 }
 
 const reactors = {
-  'new-todo-update': function(immutable, text){
+  'new-todo-update': function(immutable, notifyFn, text){
     return immutable.set('newTodoText',text);
   },
-  'edit-todo-update': function(immutable, todoUid, text){
+  'edit-todo-update': function(immutable, notifyFn, todoUid, text){
     return updateTodo(immutable,todoUid, (todo) => todo.set('editingText',text))
   },
-  'new-todo-enter': function(immutable){
+  'new-todo-enter': function(immutable, notifyFn){
     const trimmedText = immutable.get('newTodoText').trim();
     if( _.isEmpty(trimmedText) ){
       return immutable;
@@ -46,7 +46,7 @@ const reactors = {
       return todos.push(newTodo);
     });
   },
-  'edit-todo-commit': function(immutable,todoUid){
+  'edit-todo-commit': function(immutable, notifyFn, todoUid){
     immutable = updateTodo(immutable,todoUid, function (todo){
       return todo
         .set('text',todo.get('editingText'))
@@ -55,15 +55,15 @@ const reactors = {
 
     return immutable.update('todos',removeEmptyTodos);
   },
-  'edit-todo-abort': function(immutable,todoUid){
+  'edit-todo-abort': function(immutable, notifyFn, todoUid){
     return updateTodo(immutable,todoUid, (todo) => todo.delete('editingText'));
   },
-  'todo-destroy': function(immutable, todoUid){
+  'todo-destroy': function(immutable, notifyFn, todoUid){
     return immutable.update('todos',function(todos){
       return todos.filterNot( (todo) => todo.get('uid') === todoUid );
     });
   },
-  'todo-edit-requested': function(immutable,todoUid){
+  'todo-edit-requested': function(immutable, notifyFn, todoUid){
     function todoUpdater(todo){
       if(todo.get('uid') === todoUid){
         return todo.set('editingText',todo.get('text'));
@@ -76,22 +76,22 @@ const reactors = {
       return todos.map(todoUpdater);
     });
   },
-  'todo-completion-toggled': function(immutable,todoUid,completionState){
+  'todo-completion-toggled': function(immutable, notifyFn, todoUid, completionState){
     return updateTodo(immutable,todoUid, (todo) => todo.set('completed',completionState));
   },
-  'completion-toggle-all': function(immutable){
+  'completion-toggle-all': function(immutable, notifyFn){
     return immutable.update('todos', function(todos){
       const allTodosAreComplete = todos.every( (todo) => todo.get('completed') );
       const newCompleteness = !allTodosAreComplete;
       return todos.map((todo) => todo.set('completed',newCompleteness));
     });
   },
-  'clear-completed-todos': function(immutable){
+  'clear-completed-todos': function(immutable, notifyFn){
     return immutable.update('todos', function(todos){
       return todos.filterNot( (todo) => todo.get('completed') );
     });
   },
-  'set-filter': function(immutable,filter){
+  'set-filter': function(immutable, notifyFn, filter){
     return immutable.set('filter',filter);
   }
 };

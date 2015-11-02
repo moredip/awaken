@@ -27,7 +27,7 @@ function boot( renderFn, initialState, appContainer, reactorFn ){
   function appStateTransformer(previousState,notification){
     const transformFn = reactorFn(notification.name);
     if( transformFn ){
-      return transformFn.apply(null,[previousState].concat(notification.args));
+      return transformFn.apply(null,[previousState,publishNotification].concat(notification.args));
     }else{
       return previousState;
     }
